@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.wolfcode.crm.mapper.DepotMapper" >
+  <resultMap id="BaseResultMap" type="cn.wolfcode.crm.domain.Depot" >
+    <id column="id" property="id" />
+    <result column="name" property="name" />
+    <result column="sn" property="sn" />
+    <result column="linkman" property="linkman" />
+    <result column="tel" property="tel" />
+    <result column="status" property="status" />
+    <result column="address" property="address" />
+    <result column="remark" property="remark" />
+    <result column="inputTime" property="inputTime"/>
+  </resultMap>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long" >
+    delete from `depot`
+    where id = #{id}
+  </delete>
+  <insert id="insert" parameterType="cn.wolfcode.crm.domain.Depot" useGeneratedKeys="true" keyProperty="id" >
+    insert into `depot` (name, sn, linkman, tel, status, address, remark,inputTime)
+    values (#{name}, #{sn}, #{linkman}, #{tel}, #{status}, #{address}, #{remark},#{inputTime})
+  </insert>
+  <update id="updateByPrimaryKey" parameterType="cn.wolfcode.crm.domain.Depot" >
+    update `depot`
+    set name = #{name},
+      sn = #{sn},
+      linkman = #{linkman},
+      tel = #{tel},
+      status = #{status},
+      address = #{address},
+      remark = #{remark}
+    where id = #{id}
+  </update>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long" >
+    select id, name, sn, linkman, tel, status, address, remark,inputTime
+    from `depot`
+    where id = #{id}
+  </select>
+  <select id="selectAll" resultMap="BaseResultMap" >
+    select id, name, sn, linkman, tel, status, address, remark,inputTime
+    from `depot`
+  </select>
+  <select id="queryCount" resultType="java.lang.Integer">
+    SELECT COUNT(id) FROM depot
+    <include refid="baseSql"/>
+  </select>
+  <select id="queryList" resultType="cn.wolfcode.crm.domain.Depot">
+    select id, name, sn, linkman, tel, status, address, remark,inputTime
+    from `depot`
+    <include refid="baseSql"/>
+  </select>
+
+  <sql id="baseSql">
+    <where>
+      <if test="keyword != null and keyword != null">
+        AND (name LIKE concat('%',#{keyword},'%') or sn LIKE concat('%',#{keyword},'%') or linkman LIKE concat('%',#{keyword},'%')
+        or tel LIKE concat('%',#{keyword},'%'))
+      </if>
+    </where>
+  </sql>
+
+  <!--状态改变-->
+  <update id="changeStatus">
+    update `depot` SET status = status^1
+    where id = #{id}
+  </update>
+
+</mapper>

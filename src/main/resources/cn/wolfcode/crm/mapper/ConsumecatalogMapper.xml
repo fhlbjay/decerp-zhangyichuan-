@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.wolfcode.crm.mapper.ConsumecatalogMapper">
+    <resultMap id="BaseResultMap" type="cn.wolfcode.crm.domain.Consumecatalog">
+        <id column="id" property="id" jdbcType="BIGINT"/>
+        <result column="name" property="name" jdbcType="VARCHAR"/>
+        <result column="parent_id" property="parentId" jdbcType="BIGINT"/>
+        <collection property="children" ofType="cn.wolfcode.crm.domain.Consumecatalog" columnPrefix="c_">
+            <id column="id" property="id"/>
+            <result column="name" property="name"/>
+        </collection>
+    </resultMap>
+
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+    delete from `consumecatalog`
+    where id = #{id,jdbcType=BIGINT}
+  </delete>
+    <insert id="insert" parameterType="cn.wolfcode.crm.domain.Consumecatalog" useGeneratedKeys="true" keyProperty="id">
+    insert into `consumecatalog` (name, parent_id)
+    values (#{name,jdbcType=VARCHAR}, #{parentId,jdbcType=BIGINT})
+  </insert>
+    <update id="updateByPrimaryKey" parameterType="cn.wolfcode.crm.domain.Consumecatalog">
+    update `consumecatalog`
+    set name = #{name,jdbcType=VARCHAR},
+      parent_id = #{parentId,jdbcType=BIGINT}
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+    <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long">
+    select id, name, parent_id
+    from `consumecatalog`
+    where id = #{id,jdbcType=BIGINT}
+  </select>
+    <select id="selectAll" resultMap="BaseResultMap">
+    select id, name, parent_id
+    from `consumecatalog`
+  </select>
+    <select id="selectForParent" resultMap="BaseResultMap">
+    select distinct p.id, p.name, p.parent_id, c.id c_id, c.name c_name, c.parent_id c_parentId
+		from consumecatalog p left
+		join consumecatalog c
+		on c.parent_id = p.id
+		where p.parent_id is null
+  </select>
+    <select id="selectForChildren" resultMap="BaseResultMap">
+    select id, name, parent_id
+    from `consumecatalog`
+    where parent_id = #{id}
+  </select>
+    <select id="queryCount" resultType="Integer">
+    SELECT COUNT(id)
+    FROM consumecatalog
+  </select>
+    <select id="countAmountByDay" resultType="decimal">
+    SELECT IFNULL(sum(amount),0)
+    FROM dailyconsume
+    WHERE date = date(now())
+  </select>
+    <select id="countAmountByMonth" resultType="decimal">
+    SELECT IFNULL(sum(amount),0)
+    FROM dailyconsume
+    WHERE DATE_FORMAT(date,'%Y%m') = DATE_FORMAT(curdate(),'%Y%m')
+  </select>
+    <select id="countAmountByYear" resultType="decimal">
+    SELECT IFNULL(sum(amount),0)
+    FROM dailyconsume
+    WHERE Year(date) = YEAR(now())
+  </select>
+    <select id="selectChartsByMonth" resultType="java.util.Map">
+    SELECT
+    DATE_FORMAT(date,'%m') month,
+    sum(amount) amount
+    FROM dailyconsume
+    WHERE Year(date) = YEAR(now())
+    GROUP BY month
+    </select>
+    <select id="selectChartsByName" resultType="java.util.Map">
+    SELECT
+    sn name,
+    sum(amount) amount
+    FROM dailyconsume
+    WHERE Year(date) = YEAR(now())
+    GROUP BY name
+    ORDER BY amount DESC
+  </select>
+</mapper>

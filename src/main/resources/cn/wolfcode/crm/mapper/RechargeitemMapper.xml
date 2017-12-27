@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.wolfcode.crm.mapper.RechargeitemMapper">
+    <resultMap id="BaseResultMap" type="cn.wolfcode.crm.domain.Rechargeitem">
+        <id column="id" property="id"/>
+        <result column="payment" property="payment"/>
+        <result column="oldmount" property="oldmount"/>
+        <result column="rechargemount" property="rechargemount"/>
+        <result column="remarks" property="remarks"/>
+        <result column="vip_id" property="vipId"/>
+        <result column="vipcard_id" property="vipcardId"/>
+        <result column="rechargetime" property="rechargetime"/>
+        <result column="currentmount" property="currentmount"/>
+    </resultMap>
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+        DELETE FROM `rechargeitem`
+        WHERE id = #{id}
+    </delete>
+    <insert id="insert" parameterType="cn.wolfcode.crm.domain.Rechargeitem" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO `rechargeitem` (payment, oldmount, rechargemount,
+                                    remarks, vip_id, vipcard_id, rechargetime,
+                                    currentmount)
+        VALUES (#{payment}, #{oldmount}, #{rechargemount},
+                #{remarks}, #{vipId}, #{vipcardId}, #{rechargetime},
+                #{currentmount})
+    </insert>
+    <update id="updateByPrimaryKey" parameterType="cn.wolfcode.crm.domain.Rechargeitem">
+        UPDATE `rechargeitem`
+        SET payment       = #{payment},
+            oldmount      = #{oldmount},
+            rechargemount = #{rechargemount},
+            remarks       = #{remarks},
+            vipId         = #{vipId},
+            vipcardId     = #{vipcardId},
+            rechargetime  = #{rechargetime},
+            currentmount  = #{currentmount}
+        WHERE id = #{id,jdbcType}
+    </update>
+    <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long">
+        SELECT
+            id,
+            payment,
+            oldmount,
+            rechargemount,
+            remarks,
+            vipId,
+            vipcardId,
+            rechargetime,
+            currentmount
+        FROM `rechargeitem`
+        WHERE id = #{id}
+    </select>
+    <select id="selectAll" resultMap="BaseResultMap">
+        SELECT
+            id,
+            payment,
+            oldmount,
+            rechargemount,
+            remarks,
+            vipId,
+            vipcardId,
+            rechargetime,
+            currentmount
+        FROM `rechargeitem`
+    </select>
+    <select id="queryCount" resultType="java.lang.Integer">
+        SELECT count(id)
+        FROM `rechargeitem`
+        WHERE vip_id=#{vipId}
+    </select>
+    <select id="queryList" resultType="cn.wolfcode.crm.domain.Rechargeitem">
+        SELECT
+            id,
+            payment,
+            oldmount,
+            rechargemount,
+            remarks,
+            vip_id,
+            vipcard_id,
+            rechargetime,
+            currentmount
+        FROM `rechargeitem`
+        WHERE vip_id=#{vipId}
+        LIMIT #{beginIndex},#{rows}
+    </select>
+    <select id="selectRechargeitemByVipId" resultType="cn.wolfcode.crm.domain.Rechargeitem">
+        SELECT
+            id,
+            payment,
+            oldmount,
+            rechargemount,
+            remarks,
+            vip_id,
+            vipcard_id,
+            rechargetime,
+            currentmount
+        FROM `rechargeitem`
+        WHERE vip_id=#{id}
+    </select>
+    <select id="selectTotalRechargeByVipId" resultType="java.math.BigDecimal">
+        SELECT sum(rechargemount)
+        FROM rechargeitem
+        WHERE vip_id=#{vipId}
+        
+    </select>
+    <select id="selectTotalRecharge" resultType="java.math.BigDecimal">
+        SELECT sum(rechargemount)
+        FROM rechargeitem
+        WHERE rechargetime>=#{beginDate} and rechargetime &lt;= #{endDate}
+    </select>
+</mapper>

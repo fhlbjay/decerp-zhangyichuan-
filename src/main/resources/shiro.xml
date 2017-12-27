@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:aop="http://www.springframework.org/schema/aop" xmlns:jee="http://www.springframework.org/schema/jee"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="
+			http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+			http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+			http://www.springframework.org/schema/jee http://www.springframework.org/schema/jee/spring-jee.xsd
+			http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd
+			http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd">
+
+	<!--配置securityManager-->
+	<bean id="securityManager" class="org.apache.shiro.web.mgt.DefaultWebSecurityManager">
+		<property name="realm" ref="myRealm"/>
+		<property name="cacheManager" ref="cacheManager"/>
+	</bean>
+
+	<!--凭证匹配器-->
+	<bean id="credentialsMatcher" class="org.apache.shiro.authc.credential.HashedCredentialsMatcher">
+		<property name="hashAlgorithmName" value="md5"/>
+		<property name="hashIterations" value="2"/>
+	</bean>
+
+	<bean id="myFormFilter" class="cn.wolfcode.crm.web.filter.MyFormFilter"></bean>
+
+	<!--自定义数据源-->
+	<bean id="myRealm" class="cn.wolfcode.crm.realm.MyRealm">
+		<property name="credentialsMatcher" ref="credentialsMatcher"/>
+	</bean>
+
+	<!--配置shiroFilter工厂-->
+	<bean id="shiroFilter" class="org.apache.shiro.spring.web.ShiroFilterFactoryBean">
+		<property name="securityManager" ref="securityManager"/>
+		<!--登录表单的地址-->
+		<property name="loginUrl" value="/login.do"/>
+		<!--重新指定自定义的过滤器-->
+		<property name="filters">
+			<map>
+				<entry key="authc" value-ref="myFormFilter"/>
+			</map>
+		</property>
+		<!--配置路径的权限级别-->
+		<property name="filterChainDefinitions">
+			<value>
+				#静态资源可以匿名访问
+				/static/**=anon
+				/jquery-easyui/**=anon
+				#登录页面设置为匿名访问
+				/login.jsp=anon
+				/login1.jsp=anon
+				/register.jsp=anon
+				/employee/saveOrUpdate.*=anon
+				#某些浏览器会找tomcat的图标
+				/favicon.ico=anon
+				#logOut,会被logout捕获并清除session
+				/logOut=logout
+				#所有的请求都需要身份认证
+				/** = authc
+			</value>
+		</property>
+	</bean>
+
+	<!--使用cglib(继承)的方式来实现动态代理
+	<aop:config proxy-target-class="true"> </aop:config>
+	-->
+
+	<!--使用第三方去扫描shiro注解,spring管理需要重启-->
+	<bean class="org.apache.shiro.spring.security.interceptor.AuthorizationAttributeSourceAdvisor ">
+		<property name="securityManager" ref="securityManager"></property>
+	</bean>
+	<!--缓存管理器-->
+	<bean id="cacheManager" class="org.apache.shiro.cache.ehcache.EhCacheManager">
+		<property name="cacheManagerConfigFile" value="classpath:shiro-ehcache.xml"/>
+	</bean>
+</beans>

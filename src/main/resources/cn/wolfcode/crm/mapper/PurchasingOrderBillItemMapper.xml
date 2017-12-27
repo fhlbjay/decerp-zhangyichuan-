@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.wolfcode.crm.mapper.PurchasingOrderBillItemMapper" >
+  <resultMap id="BaseResultMap" type="cn.wolfcode.crm.domain.PurchasingOrderBillItem" >
+    <id column="id" property="id" />
+    <result column="costPrice" property="costPrice" />
+    <result column="number" property="number" />
+    <result column="amount" property="amount" />
+    <result column="remark" property="remark" />
+    <result column="bill_id" property="billId" />
+    <association property="product" javaType="cn.wolfcode.crm.domain.Product" columnPrefix="p_">
+      <id column="id" property="id"/>
+      <result column="name" property="name"/>
+      <result column="sn" property="sn"/>
+    </association>
+  </resultMap>
+  <delete id="deleteByBillId" parameterType="java.lang.Long" >
+    delete from `purchasingorderbillitem`
+    where bill_id=#{id}
+  </delete>
+  <insert id="insert" parameterType="cn.wolfcode.crm.domain.PurchasingOrderBillItem" useGeneratedKeys="true" keyProperty="id" >
+    insert into `purchasingorderbillitem` (costPrice, number, amount, remark, product_id, bill_id)
+    values (#{costPrice}, #{number}, #{amount}, #{remark}, #{product.id}, #{billId})
+  </insert>
+
+  <select id="selectItemByBillId" resultMap="BaseResultMap" parameterType="java.lang.Long" >
+    select item.id,item.costPrice,item.number,item.amount,item.remark,item.bill_id,
+  	p.id p_id,p.name p_name,p.sn p_sn
+  	from purchasingorderbillitem item join product p on item.product_id=p.id
+  	where item.bill_id=#{billId}
+  </select>
+
+</mapper>

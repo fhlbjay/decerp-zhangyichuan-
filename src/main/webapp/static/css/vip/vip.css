@@ -1,0 +1,18 @@
+ .memberreporttitle {
+    padding-top: 3px;
+    height: 30px;
+    line-height: 30px;
+    padding-right: 8px;
+}
+  .center-box {
+     height: 90px;
+     width: 100%;
+     text-align: center;
+     line-height: 90px;
+ }
+  .center-footer-box {
+     height: 36px;
+     line-height: 30px;
+     font-size: 12px;
+     position: relative;
+ }

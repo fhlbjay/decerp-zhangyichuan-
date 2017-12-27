@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.wolfcode.crm.mapper.PurchasingOrderBillMapper" >
+  <resultMap id="BaseResultMap" type="cn.wolfcode.crm.domain.PurchasingOrderBill" >
+    <id column="id" property="id" />
+    <result column="sn" property="sn" />
+    <result column="vdate" property="vdate" />
+    <result column="status" property="status" />
+    <result column="totalAmount" property="totalAmount" />
+    <result column="totalNumber" property="totalNumber" />
+    <result column="auditTime" property="auditTime" />
+    <result column="inputTime" property="inputTime" />
+    <result column="returnState" property="returnState"/>
+    <association property="inputUser" javaType="cn.wolfcode.crm.domain.Employee" columnPrefix="inputUser_">
+      <id column="id" property="id"/>
+      <result column="username" property="username"/>
+    </association>
+    <association property="auditor" javaType="cn.wolfcode.crm.domain.Employee" columnPrefix="auditor_">
+      <id column="id" property="id"/>
+      <result column="username" property="username"/>
+    </association>
+    <association property="supplier" javaType="cn.wolfcode.crm.domain.Supplier" columnPrefix="s_">
+      <id column="id" property="id"/>
+      <result column="name" property="name"/>
+    </association>
+    <association property="depot" javaType="cn.wolfcode.crm.domain.Depot" columnPrefix="d_">
+      <id column="id" property="id"/>
+      <result column="name" property="name"/>
+    </association>
+
+    <collection property="items" ofType="cn.wolfcode.crm.domain.PurchasingOrderBillItem" column="id"
+                select="cn.wolfcode.crm.mapper.PurchasingOrderBillItemMapper.selectItemByBillId"/>
+  </resultMap>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long" >
+    delete from `purchasingorderbill`
+    where id = #{id}
+  </delete>
+  <insert id="insert" parameterType="cn.wolfcode.crm.domain.PurchasingOrderBill" useGeneratedKeys="true" keyProperty="id" >
+    insert into `purchasingorderbill` (sn, vdate, status, totalAmount, totalNumber, auditTime,
+      inputTime, inputUser_id, auditor_id, supplier_id,depot_id,returnState)
+    values (#{sn}, #{vdate}, #{status}, #{totalAmount}, #{totalNumber}, #{auditTime},
+      now(), #{inputUser.id}, #{auditor.id}, #{supplier.id},#{depot.id},#{returnState})
+  </insert>
+  <update id="updateByPrimaryKey" parameterType="cn.wolfcode.crm.domain.PurchasingOrderBill" >
+    update `purchasingorderbill`
+    set sn = #{sn},
+      vdate = #{vdate},
+      status = #{status},
+      returnState = #{returnState},
+      totalAmount = #{totalAmount},
+      totalNumber = #{totalNumber},
+      supplier_id = #{supplier.id},
+      depot_id = #{depot.id}
+    where id = #{id}
+  </update>
+
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long" >
+    select id, sn, vdate, status, totalAmount, totalNumber, auditTime, inputTime, inputUser_id,
+    auditor_id, supplier_id s_id,depot_id d_id,returnState
+    from `purchasingorderbill`
+    where id = #{id}
+  </select>
+  <select id="selectAll" resultMap="BaseResultMap" >
+    select id, sn, vdate, status, totalAmount, totalNumber, auditTime, inputTime, inputUser_id,
+    auditor_id, supplier_id,depot_id,returnState
+    from `purchasingorderbill`
+  </select>
+
+  <select id="queryCount" resultType="int">
+    select count(o.id)
+    from purchasingorderbill o join employee inputUser on o.inputUser_id=inputUser.id
+    left join employee auditor on o.auditor_id=auditor.id
+    join supplier s on o.supplier_id=s.id
+    <include refid="baseSql"/>
+  </select>
+
+  <select id="queryList" resultMap="BaseResultMap">
+    select o.id,o.sn,o.vdate,o.status,o.totalAmount,o.totalNumber,o.auditTime,o.inputTime,o.returnState,inputUser.id
+    inputUser_id,inputUser.username inputUser_username,auditor.id auditor_id,auditor.username auditor_username,s.id s_id,s.name s_name,
+    d.id d_id,d.name d_name
+    from purchasingorderbill o join employee inputUser on o.inputUser_id=inputUser.id
+    left join employee auditor on o.auditor_id=auditor.id
+    join supplier s on o.supplier_id=s.id
+    JOIN depot d ON o.depot_id=d.id
+    <include refid="baseSql"/>
+    limit #{beginIndex},#{rows}
+  </select>
+
+
+  <sql id="baseSql">
+    <where>
+      <if test="beginDate != null">
+        and o.vdate >= #{beginDate}
+      </if>
+      <if test="endDate != null">
+        and o.vdate &lt; #{endDate}
+      </if>
+      <if test="keyword != null and keyword != null">
+        and (o.sn LIKE concat('%',#{keyword},'%') or s.name LIKE concat('%',#{keyword},'%'))
+      </if>
+    </where>
+  </sql>
+
+  <!--审核-->
+  <update id="audit">
+    update purchasingorderbill
+  	set status=#{status},
+  	auditor_id=#{auditor.id},
+  	auditTime=#{auditTime}
+  	where id=#{id}
+  </update>
+
+  <!--退货-->
+  <update id="returnBill">
+    update purchasingorderbill
+  	set returnState=#{returnState}
+  	where id=#{id}
+  </update>
+
+
+  <select id="queryReturnCount" resultType="java.lang.Integer">
+    select count(o.id)
+    from purchasingorderbill o join employee inputUser on o.inputUser_id=inputUser.id
+    left join employee auditor on o.auditor_id=auditor.id
+    join supplier s on o.supplier_id=s.id
+    WHERE returnState = 1
+  </select>
+  <select id="queryReturnList" resultMap="BaseResultMap">
+    select o.id,o.sn,o.vdate,o.status,o.totalAmount,o.totalNumber,o.auditTime,o.inputTime,o.returnState,inputUser.id
+    inputUser_id,inputUser.username inputUser_username,auditor.id auditor_id,auditor.username auditor_username,s.id s_id,s.name s_name,
+    d.id d_id,d.name d_name
+    from purchasingorderbill o join employee inputUser on o.inputUser_id=inputUser.id
+    left join employee auditor on o.auditor_id=auditor.id
+    join supplier s on o.supplier_id=s.id
+    JOIN depot d ON o.depot_id=d.id
+    WHERE returnState = 1
+    limit #{beginIndex},#{rows}
+  </select>
+
+  <!--导出条件查询-->
+  <select id="selectAllBill" resultMap="BaseResultMap">
+    select o.id,o.sn,o.vdate,o.status,o.totalAmount,o.totalNumber,o.auditTime,o.inputTime,o.returnState,inputUser.id
+    inputUser_id,inputUser.username inputUser_username,auditor.id auditor_id,auditor.username auditor_username,s.id s_id,s.name s_name,
+    d.id d_id,d.name d_name
+    from purchasingorderbill o join employee inputUser on o.inputUser_id=inputUser.id
+    left join employee auditor on o.auditor_id=auditor.id
+    join supplier s on o.supplier_id=s.id
+    JOIN depot d ON o.depot_id=d.id
+    WHERE auditor_id IS NOT NULL
+  </select>
+
+
+</mapper>

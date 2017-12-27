@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.wolfcode.crm.mapper.DirnameMapper" >
+  <resultMap id="BaseResultMap" type="cn.wolfcode.crm.domain.Dirname" >
+    <id column="id" property="id" />
+    <result column="name" property="name" />
+      <association property="parent" javaType="LinkageMenu" columnPrefix="m_">
+          <id column="id" property="id"/>
+          <result property="name" column="name"/>
+      </association>
+   </resultMap>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long" >
+    delete from `dirname`
+    where id = #{id}
+  </delete>
+  <insert id="insert" parameterType="cn.wolfcode.crm.domain.Dirname" useGeneratedKeys="true" keyProperty="id" >
+    insert into `dirname` (name, parent_id)
+    values (#{name}, #{parent.id})
+  </insert>
+  <update id="updateByPrimaryKey" parameterType="cn.wolfcode.crm.domain.Dirname" >
+    update `dirname`
+    set name = #{name},
+      parent_id = #{parent.id}
+    where id = #{id}
+  </update>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long" >
+    select id, name, parent_id
+    from `dirname`
+    where id = #{id}
+  </select>
+  <select id="selectAll" resultMap="BaseResultMap" >
+    select id, name, parent_id
+    from `dirname`
+  </select>
+    <select id="selectParentByName" resultMap="BaseResultMap">
+            SELECT  * from dirname WHERE  name=#{name}
+    </select>
+    <select id="selectDirnameBymenuId" resultMap="BaseResultMap">
+        SELECT * FROM dirname WHERE parent_id=#{id}
+    </select>
+
+    <select id="selectDirnemByParentId" resultMap="BaseResultMap">
+        SELECT * FROM dirname WHERE parent_id=#{id}
+    </select>
+</mapper>

@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.wolfcode.crm.mapper.DictionaryitemMapper" >
+  <resultMap id="BaseResultMap" type="cn.wolfcode.crm.domain.Dictionaryitem" >
+    <id column="id" property="id" />
+    <result column="name" property="name" />
+    <result column="intro" property="intro" />
+    <association property="dictionary" javaType="Dictionary" columnPrefix="d_">
+        <id property="id" column="id"/>
+        <result property="name" column="name"/>
+    </association>
+  </resultMap>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long" >
+    delete from `dictionaryitem`
+    where id = #{id}
+  </delete>
+    <delete id="deleteDictionaryitemByDictionaryId">
+        DELETE  FROM  dictionaryitem where dictionary_id=#{id}
+    </delete>
+    <insert id="insert" parameterType="cn.wolfcode.crm.domain.Dictionaryitem" useGeneratedKeys="true" keyProperty="id" >
+    insert into `dictionaryitem` (name, intro, dictionary_id)
+    values (#{name}, #{intro}, #{dictionary.id})
+  </insert>
+  <update id="updateByPrimaryKey" parameterType="cn.wolfcode.crm.domain.Dictionaryitem" >
+    update `dictionaryitem`
+    set name = #{name},
+      intro = #{intro},
+      dictionary_id = #{dictionary.id}
+    where id = #{id}
+  </update>
+  <select id="queryCount" resultType="Integer"  >
+    select COUNT(di.id)
+    from `dictionaryitem` di LEFT JOIN dictionary d on di.dictionary_id=d.id
+    WHERE d.sn=#{sn}
+
+</select>
+    <select id="queryList" resultMap="BaseResultMap" >
+     select di.*, d.name d_name,d.id d_id
+    from `dictionaryitem` di LEFT JOIN dictionary d on di.dictionary_id=d.id
+    WHERE d.sn=#{sn}
+</select>
+
+</mapper>

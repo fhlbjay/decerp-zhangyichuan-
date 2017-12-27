@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.wolfcode.crm.mapper.ProductStockMapper" >
+  <resultMap id="BaseResultMap" type="cn.wolfcode.crm.domain.ProductStock" >
+    <id column="id" property="id" />
+    <result column="price" property="price" />
+    <result column="storeNumber" property="storeNumber" />
+    <result column="amount" property="amount" />
+    <result column="inputTime" property="inputTime" />
+    <association property="product" javaType="cn.wolfcode.crm.domain.Product" columnPrefix="p_">
+      <id property="id" column="id" />
+      <result property="name" column="name" />
+      <result property="sn" column="sn" />
+    </association>
+    <association property="depot" javaType="cn.wolfcode.crm.domain.Depot" columnPrefix="d_">
+      <result property="id" column="id" />
+      <result property="name" column="name" />
+    </association>
+  </resultMap>
+  <insert id="insert" parameterType="cn.wolfcode.crm.domain.ProductStock" useGeneratedKeys="true" keyProperty="id" >
+    insert into `productstock` (price, storeNumber, amount, product_id, depot_id,inputTime)
+    values (#{price}, #{storeNumber}, #{amount}, #{product.id}, #{depot.id},#{inputTime})
+  </insert>
+  <update id="updateByPrimaryKey" parameterType="cn.wolfcode.crm.domain.ProductStock" >
+    update `productstock`
+    set price = #{price},
+      storeNumber = #{storeNumber},
+      amount = #{amount},
+      inputTime = #{inputTime}
+    where id = #{id}
+  </update>
+
+  <select id="queryCount" resultType="java.lang.Integer">
+    select count(ps.id)
+  	from productStock ps join depot d on ps.depot_id=d.id
+	join product p on ps.product_id=p.id
+	WHERE d.id = #{id}
+  </select>
+
+  <select id="queryList" resultMap="BaseResultMap">
+    select d.id d_id,d.name d_name,p.id p_id,p.sn p_sn,p.name p_name,ps.id,ps.storeNumber,ps.price,ps.amount,ps.inputTime
+    from productStock ps join depot d on ps.depot_id=d.id
+    join product p on ps.product_id=p.id
+    WHERE d.id = #{id}
+  </select>
+
+  <select id="selectByDepotIdAndProductId" resultType="cn.wolfcode.crm.domain.ProductStock">
+    select id,price,storeNumber,amount,product_id,depot_id,inputTime
+  	from productStock
+  	where depot_id=#{depotId} and product_id=#{productId}
+  </select>
+
+  <select id="selectNumber" resultType="java.lang.Integer">
+    SELECT storeNumber
+    FROM productStock
+    WHERE product_id = #{pId} and depot_id = #{dId}
+  </select>
+
+
+  <update id="changeNumber">
+    UPDATE productstock SET storeNumber = #{storeNumber}
+    where id = #{psId}
+  </update>
+</mapper>

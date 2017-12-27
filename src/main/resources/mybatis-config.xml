@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration
+  PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+	<!-- 一些个性化的设置 -->
+	<!-- 配置延迟加载 -->
+	<settings>
+	<!-- 开启延迟加载:默认是查询主对象的时候都会立即执行对依赖对象的查询 -->
+		<setting name="lazyLoadingEnabled" value="true"/>
+		<!-- 默认是访问主对象中任意属性都会立即执行对依赖对象的查询  -->
+		<setting name="aggressiveLazyLoading" value="false"/>
+		<!-- 默认在访问主对象中的toString/equals等方法的时候也会触发延迟加载 -->
+		<setting name="lazyLoadTriggerMethods" value="clone"/>
+	</settings>
+</configuration>

@@ -1,0 +1,229 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.wolfcode.crm.mapper.VipMapper">
+    <resultMap id="BaseResultMap" type="cn.wolfcode.crm.domain.Vip">
+        <id column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="tel" property="tel"/>
+        <result column="password" property="password"/>
+        <result column="vipgrade" property="vipgrade"/>
+        <result column="qq" property="qq"/>
+        <result column="weixin" property="weixin"/>
+        <result column="email" property="email"/>
+        <result column="state" property="state"/>
+        <result column="birthday" property="birthday"/>
+        <association property="vipcard" javaType="cn.wolfcode.crm.domain.Vipcard" columnPrefix="vipcard_">
+            <id column="id" property="id"/>
+            <result column="sn" property="sn"/>
+            <result column="integral" property="integral"/>
+            <result column="currentintegral" property="currentintegral"/>
+            <result column="consumptionamount" property="consumptionamount"/>
+            <result column="balance" property="balance"/>
+            <result column="discount" property="discount"/>
+        </association>
+    </resultMap>
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+        DELETE FROM `vip`
+        WHERE id = #{id}
+    </delete>
+    <insert id="insert" parameterType="cn.wolfcode.crm.domain.Vip" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO `vip` (vipcard_id, name, tel,
+                           password, vipgrade,
+                           qq, weixin, state,
+                           email,birthday)
+        VALUES (#{vipcard.id}, #{name}, #{tel},
+                #{password}, #{vipgrade},
+                #{qq}, #{weixin}, #{state},
+                #{email},#{birthday})
+    </insert>
+    <update id="updateByPrimaryKey" parameterType="cn.wolfcode.crm.domain.Vip">
+        UPDATE `vip`
+        SET
+            name       = #{name},
+            tel        = #{tel},
+            qq         = #{qq},
+            weixin     = #{weixin},
+            email      = #{email},
+            birthday   = #{birthday}
+        WHERE id = #{id}
+    </update>
+    <update id="changeState">
+        UPDATE vip
+        SET state = state ^ 1
+        WHERE id = #{id}
+    </update>
+    <!--更新会员等级-->
+    <update id="updateVipGrade">
+        UPDATE vip
+        SET vipgrade =#{grade}
+        where id = #{vipId}
+    </update>
+    <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long">
+        SELECT
+            v.id,
+            v.vipcard_id,
+            v.name,
+            v.tel,
+            v.password,
+            v.vipgrade,
+            v.qq,
+            v.weixin,
+            v.email,
+            v.state,
+            vc.id                vipcard_id,
+            vc.sn                vipcard_sn,
+            vc.integral          vipcard_integral,
+            vc.currentintegral   vipcard_currentintegral,
+            vc.consumptionamount vipcard_consumptionamount,
+            vc.balance           vipcard_balance
+        FROM `vip` v
+            LEFT JOIN vipcard vc ON v.vipcard_id = vc.id
+        WHERE v.id = #{id}
+    </select>
+    <select id="selectAll" resultMap="BaseResultMap">
+        SELECT
+            v.id,
+            v.vipcard_id,
+            v.name,
+            v.tel,
+            v.password,
+            v.vipgrade,
+            v.qq,
+            v.weixin,
+            v.email,
+            v.state,
+            v.birthday,
+            vc.id                vipcard_id,
+            vc.sn                vipcard_sn,
+            vc.integral          vipcard_integral,
+            vc.currentintegral   vipcard_currentintegral,
+            vc.consumptionamount vipcard_consumptionamount,
+            vc.balance           vipcard_balance
+        FROM `vip` v
+            LEFT JOIN vipcard vc ON v.vipcard_id = vc.id
+    </select>
+    <sql id="baseSql">
+        <where>
+            <if test="keyword!=null and keyword!=''">
+                and (vc.sn like concat("%",#{keyword},"%") or v.tel like concat("%",#{keyword},"%") )
+            </if>
+        </where>
+    </sql>
+    <select id="queryCount" resultType="java.lang.Integer">
+        SELECT count(v.id)
+        FROM `vip` v
+        LEFT JOIN vipcard vc ON v.vipcard_id = vc.id
+        <include refid="baseSql"/>
+    </select>
+    <select id="queryList" resultMap="BaseResultMap">
+        SELECT
+        v.id,
+        v.vipcard_id,
+        v.name,
+        v.tel,
+        v.password,
+        v.vipgrade,
+        v.qq,
+        v.weixin,
+        v.email,
+        v.state,
+        v.birthday,
+        vc.id vipcard_id,
+        vc.sn vipcard_sn,
+        vc.integral vipcard_integral,
+        vc.currentintegral vipcard_currentintegral,
+        vc.consumptionamount vipcard_consumptionamount,
+        vc.balance vipcard_balance,
+        vc.discount vipcard_discount
+        FROM `vip` v
+        LEFT JOIN vipcard vc ON v.vipcard_id = vc.id
+        <include refid="baseSql"/>
+        LIMIT #{beginIndex}, #{rows}
+    </select>
+    <select id="selectBirthdayOfToday" resultType="java.lang.Integer">
+        SELECT count(birthday)
+        FROM vip
+        WHERE birthday = #{date}
+    </select>
+    <select id="selectBirthdayOfMonth" resultType="java.lang.Integer">
+        SELECT count(birthday)
+        FROM vip
+        WHERE birthday>#{begindate} and birthday &lt; #{enddate}
+    </select>
+    <select id="selectVipNumber" resultType="java.lang.Integer">
+        SELECT count(*)
+        FROM vip
+    </select>
+    <select id="selectConsumer" resultType="java.math.BigDecimal">
+        SELECT sum(balance)
+        FROM vipcard
+    </select>
+    <select id="selectConsumptionAmount" resultType="java.math.BigDecimal">
+        SELECT sum(consumptionamount)
+        FROM vipcard
+    </select>
+    <select id="selectOrderBilNum" resultType="java.lang.Integer">
+        SELECT count(id)
+        FROM orderbill
+    </select>
+    <select id="selectConsumptionAmountTop" resultType="java.lang.String">
+        SELECT v.name
+        FROM vip v
+            LEFT JOIN vipcard vc ON v.vipcard_id = vc.id
+        ORDER BY vc.consumptionamount DESC
+        LIMIT 3
+    </select>
+    <sql id="chartSql">
+        <where>
+            <if test="beginDate!=null">
+                and rg.rechargetime>=#{beginDate}
+            </if>
+            <if test="endDate!=null">
+                and rg.rechargetime &lt;= #{endDate}
+            </if>
+        </where>
+    </sql>
+    <select id="vipChart" resultType="java.util.Map">
+        SELECT
+        ${groupBy} groupByName,
+        COUNT(rg.id) totalNumber,
+        SUM(rg.rechargemount) totalRecharge,
+        SUM(vc.consumptionamount) totalConsum
+        FROM vipcard vc
+        LEFT JOIN vip v ON v.vipcard_id = vc.id
+        LEFT JOIN rechargeitem rg ON vc.id = rg.vipcard_id
+        <include refid="chartSql"/>
+        GROUP BY ${groupBy}
+
+    </select>
+    <select id="selectTotalNumber" resultType="java.lang.Integer">
+        select count(id)
+        from vip
+        <where>
+            <if test="beginDate!=null">
+                and birthday>=#{beginDate}
+            </if>
+            <if test="endDate!=null">
+                and birthday &lt;= #{endDate}
+            </if>
+        </where>
+    </select>
+    <select id="dateChart" resultType="java.util.Map">
+        SELECT
+        ${groupBy} groupByName,
+        COUNT(rg.id) totalNumber,
+        SUM(rg.rechargemount) totalRecharge,
+        SUM(vc.consumptionamount) totalConsum
+        FROM vipcard vc
+        LEFT JOIN vip v ON v.vipcard_id = vc.id
+        LEFT JOIN rechargeitem rg ON vc.id = rg.vipcard_id
+        <include refid="chartSql"/>
+        GROUP BY ${groupBy}
+    </select>
+    <select id="selectVipByVipcardId" resultType="cn.wolfcode.crm.domain.Vip">
+        select * from vip WHERE vipcard_id =#{vcd} and password = #{password}
+    </select>
+    <select id="selectVipByIdPassword" resultType="cn.wolfcode.crm.domain.Vip">
+            select * from vip WHERE id =#{vipcardSn} and password = #{password}
+    </select>
+</mapper>

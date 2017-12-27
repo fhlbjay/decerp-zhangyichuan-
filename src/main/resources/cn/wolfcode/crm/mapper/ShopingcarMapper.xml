@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.wolfcode.crm.mapper.ShopingcarMapper">
+    <resultMap id="BaseResultMap" type="cn.wolfcode.crm.domain.Shopingcar">
+        <id column="id" property="id"/>
+        <result column="productid" property="productid"/>
+        <result column="name" property="name"/>
+        <result column="costPrice" property="costPrice"/>
+        <result column="number" property="number"/>
+        <result column="amount" property="amount"/>
+        <result column="remark" property="remark"/>
+        <result column="status" property="status"/>
+        <result column="totalAmount" property="totalamount"/>
+        <result column="vip_id" property="vipId"/>
+    </resultMap>
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+    delete from `shopingcar`
+    where id = #{id}
+  </delete>
+    <delete id="deleteAll">
+        DELETE FROM shopingcar
+    </delete>
+    <delete id="deleteByProductId">
+        DELETE from shopingcar WHERE  productid = #{productId}
+    </delete>
+    <insert id="insert" parameterType="cn.wolfcode.crm.domain.Shopingcar" useGeneratedKeys="true" keyProperty="id">
+    insert into `shopingcar` (productid, name, costPrice, number, amount, remark, status, 
+      totalAmount, vip_id)
+    values (#{productid}, #{name}, #{costPrice}, #{number}, #{amount}, #{remark}, #{status}, 
+      #{totalamount}, #{vipId})
+  </insert>
+    <update id="updateByPrimaryKey" parameterType="cn.wolfcode.crm.domain.Shopingcar">
+    update `shopingcar`
+    set productid = #{productid},
+      name = #{name},
+      costPrice = #{costPrice},
+      number = #{number},
+      amount = #{amount},
+      remark = #{remark},
+      status = #{status},
+      totalAmount = #{totalamount},
+      vip_id = #{vipId}
+    where id = #{id}
+  </update>
+    <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long">
+    select id, productid, name, costPrice, number, amount, remark, status, totalAmount, 
+    vip_id
+    from `shopingcar`
+    where id = #{id}
+  </select>
+    <select id="selectAll" resultMap="BaseResultMap">
+    select id, productid, name, costPrice, number, amount, remark, status, totalAmount, 
+    vip_id
+    from `shopingcar`
+  </select>
+    <select id="selectByproductKey" resultType="cn.wolfcode.crm.domain.Shopingcar">
+       select * from shopingcar WHERE productid = #{id}
+    </select>
+
+    <select id="selectId" resultType="java.lang.Long">
+    SELECT productid FROM shopingcar
+  </select>
+
+    <select id="queryCount" resultType="java.lang.Integer">
+    SELECT count(id) FROM shopingcar
+  </select>
+    <select id="queryList" resultMap="BaseResultMap">
+    select * from shopingcar;
+  </select>
+    <select id="selectTotalAmount" resultType="java.math.BigDecimal">
+        SELECT  sum(amount) FROM shopingcar
+    </select>
+    <select id="selectTotalNumber" resultType="java.math.BigDecimal">
+        SELECT sum(number) FROM  shopingcar
+    </select>
+    <select id="selectSunVipId" resultType="java.math.BigDecimal">
+        SELECT sum(vip_id) FROM shopingcar
+    </select>
+    <select id="selectCountVipId" resultType="java.math.BigDecimal">
+        SELECT count(vip_id) FROM  shopingcar
+    </select>
+
+</mapper>

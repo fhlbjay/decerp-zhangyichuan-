@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.wolfcode.crm.mapper.SupplierMapper">
+  <resultMap id="BaseResultMap" type="cn.wolfcode.crm.domain.Supplier">
+    <id column="id" property="id" />
+    <result column="name" property="name" />
+    <result column="arrearage" property="arrearage" />
+    <result column="linkman" property="linkman" />
+    <result column="tel" property="tel" />
+    <result column="inputTime" property="inputTime" />
+    <result column="qqNumber" property="qqNumber" />
+    <result column="address" property="address" />
+    <result column="remark" property="remark" />
+    <association columnPrefix="e_" javaType="cn.wolfcode.crm.domain.Employee" property="employee">
+      <id column="id" property="id" />
+      <result column="username" property="username" />
+    </association>
+  </resultMap>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+    delete from `supplier`
+    where id = #{id}
+  </delete>
+  <insert id="insert" keyProperty="id" parameterType="cn.wolfcode.crm.domain.Supplier" useGeneratedKeys="true">
+    insert into `supplier` (name, `arrearage`, linkman, tel, inputTime,qqNumber,address,remark, employee_id)
+    values (#{name}, #{arrearage}, #{linkman}, #{tel}, #{inputTime},#{qqNumber},#{address},#{remark}, #{employee.id})
+  </insert>
+  <update id="updateByPrimaryKey" parameterType="cn.wolfcode.crm.domain.Supplier">
+    update `supplier`
+    set name = #{name},
+      linkman = #{linkman},
+      tel = #{tel},
+      qqNumber = #{qqNumber},
+      address = #{address},
+      remark = #{remark}
+    where id = #{id}
+  </update>
+  <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
+    select id, name, `arrearage`, linkman, tel, inputTime,qqNumber,address,remark, employee_id
+    from `supplier`
+    where id = #{id}
+  </select>
+  <select id="selectAll" resultMap="BaseResultMap">
+    select id, name, `arrearage`, linkman, tel, inputTime,qqNumber,address,remark, employee_id
+    from `supplier`
+  </select>
+  <select id="queryCount" resultType="java.lang.Integer">
+    SELECT COUNT(id)
+    FROM supplier s
+    <include refid="baseSql" />
+  </select>
+  <select id="queryList" resultMap="BaseResultMap">
+    SELECT s.id,s.name,s.arrearage,s.linkman,s.tel,s.inputTime,s.qqNumber,s.address,s.remark,e.id e_id,e.username e_username
+    FROM supplier s LEFT JOIN employee e ON s.employee_id=e.id
+    <include refid="baseSql" />
+    limit #{beginIndex},#{rows}
+  </select>
+  
+  <sql id="baseSql">
+    <where>
+      <if test="keyword != null and keyword != null">
+        AND (s.name LIKE concat('%',#{keyword},'%') or s.linkman LIKE concat('%',#{keyword},'%')
+        or s.tel LIKE concat('%',#{keyword},'%'))
+      </if>
+    </where>
+  </sql>
+</mapper>

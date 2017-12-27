@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.wolfcode.crm.mapper.SystemLogMapper">
+    <resultMap id="BaseResultMap" type="cn.wolfcode.crm.domain.SystemLog">
+        <id column="id" property="id"/>
+        <result column="opTime" property="opTime"/>
+        <result column="opIp" property="opIp"/>
+        <result column="function" property="function"/>
+        <result column="params" property="params"/>
+        <association property="opUser" column="opUser_id" select="cn.wolfcode.crm.mapper.EmployeeMapper.selectByPrimaryKey"/>
+    </resultMap>
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+        DELETE FROM `systemLog`
+        WHERE id = #{id}
+    </delete>
+    <insert id="insert" parameterType="cn.wolfcode.crm.domain.SystemLog" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO `systemLog` (opUser_id, opTime, opIp, function, params)
+        VALUES (#{opUser.id}, #{opTime}, #{opIp}, #{function}, #{params})
+    </insert>
+    <update id="updateByPrimaryKey" parameterType="cn.wolfcode.crm.domain.SystemLog">
+        UPDATE `systemLog`
+        SET opUser_id = #{opUser.id},
+            opTime    = #{opTime},
+            opIp      = #{opIp},
+            function  = #{function},
+            params    = #{params}
+        WHERE id = #{id}
+    </update>
+    <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long">
+        SELECT
+            id,
+            opUser_id,
+            opTime,
+            opIp,
+            function,
+            params
+        FROM `systemLog`
+        WHERE id = #{id}
+    </select>
+    <select id="selectAll" resultMap="BaseResultMap">
+        SELECT
+            id,
+            opUser_id,
+            opTime,
+            opIp,
+            function,
+            params
+        FROM `systemLog`
+    </select>
+</mapper>

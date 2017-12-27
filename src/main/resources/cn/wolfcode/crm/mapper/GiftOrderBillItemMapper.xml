@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.wolfcode.crm.mapper.GiftOrderBillItemMapper">
+    <resultMap id="BaseResultMap" type="cn.wolfcode.crm.domain.GiftOrderBillItem">
+        <id column="id" property="id"/>
+        <result column="number" property="number"/>
+        <result column="remainIntegral" property="remainIntegral"/>
+        <result column="operation" property="operation"/>
+        <result column="date" property="date"/>
+        <association property="gift" javaType="cn.wolfcode.crm.domain.Gift" columnPrefix="g_">
+            <id column="id" property="id"/>
+            <result column="name" property="name"/>
+            <result column="integral" property="integral"/>
+        </association>
+        <association property="vip" javaType="cn.wolfcode.crm.domain.Vip" columnPrefix="v_">
+            <id column="id" property="id"/>
+            <result column="name" property="name"/>
+            <result column="vipCardId" property="vipcard.id"/>
+            <result column="sn" property="vipcard.sn"/>
+        </association>
+    </resultMap>
+    <delete id="deleteByPrimaryKey">
+        DELETE FROM `giftorderbillitem`
+        WHERE id = #{id}
+    </delete>
+    <insert id="insert" parameterType="cn.wolfcode.crm.domain.GiftOrderBillItem" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO `giftorderbillitem` (vip_id, gift_id, number, remainIntegral, operation, date)
+        VALUES (#{vip.id}, #{gift.id}, #{number}, #{remainIntegral}, #{operation}, #{date})
+    </insert>
+    <update id="updateByPrimaryKey" parameterType="cn.wolfcode.crm.domain.GiftOrderBillItem">
+        UPDATE `giftorderbillitem`
+        SET vip_id         = #{vip.id},
+            gift_id        = #{gift.id},
+            number         = #{number},
+            remainIntegral = #{remainIntegral}
+        WHERE id = #{id}
+    </update>
+    <!--不带条件的查询所有记录-->
+    <sql id="queryAllRecord">
+        SELECT
+            ob.id,
+            ob.number,
+            ob.remainIntegral,
+            ob.operation,
+            ob.date,
+            v.id         v_id,
+            v.vipcard_id v_vipCardId,
+            v.name       v_name,
+            vc.sn        v_sn,
+            g.id         g_id,
+            g.name       g_name,
+            g.integral   g_integral
+        FROM `giftorderbillitem` ob
+            JOIN vip v ON ob.vip_id = v.id
+            JOIN vipcard vc on v.vipcard_id=vc.id
+            JOIN gift g ON ob.gift_id = g.id
+    </sql>
+    <select id="selectByPrimaryKey" resultMap="BaseResultMap">
+        <include refid="queryAllRecord"/>
+        WHERE id = #{id}
+    </select>
+    <select id="selectAll" resultMap="BaseResultMap">
+        <include refid="queryAllRecord"/>
+        ORDER BY ob.id DESC
+    </select>
+    <!--通过ID的分页查询-->
+    <select id="queryCount" resultType="java.lang.Integer">
+        SELECT count(id)
+        FROM giftorderbillitem
+        <where>
+            <if test="keyword!=null and keyword!=''">
+                vip_id =#{keyword}
+            </if>
+        </where>
+    </select>
+    <select id="queryList" resultMap="BaseResultMap">
+        <include refid="queryAllRecord"/>
+        <where>
+            <if test="keyword!=null and keyword!=''">
+                v.id=#{keyword}
+            </if>
+        </where>
+        ORDER BY ob.date DESC,ob.id DESC
+        LIMIT #{beginIndex}, #{pageSize}
+    </select>
+    <!--多条件记录查询-->
+    <select id="queryRecordCount" resultType="java.lang.Integer">
+        SELECT
+        count(ob.id)
+        FROM `giftorderbillitem` ob
+        JOIN vip v ON ob.vip_id = v.id
+        JOIN gift g ON ob.gift_id = g.id
+        <where>
+            <if test="keyword!=null and keyword!=''">
+                and (v.vipcard_id like concat('%',#{keyword},'%') or v.name like concat('%',#{keyword},'%'))
+            </if>
+            <if test="dataType==1">
+                and datediff(curdate(),ob.date)&lt;=1
+            </if>
+            <if test="dataType==3">
+                and datediff(curdate(),ob.date)&lt;=3
+            </if>
+            <if test="dataType==7">
+                and datediff(curdate(),ob.date)&lt;=7
+            </if>
+            <if test="dataType==-1">
+                <if test="beginDate!=null and beginDate!=''">
+                    and ob.date>=#{beginDate}
+                </if>
+                <if test="endDate!=null and endDate!=''">
+                    and ob.date&lt;=#{endDate}
+                </if>
+            </if>
+        </where>
+    </select>
+    <select id="queryRecordList" resultMap="BaseResultMap">
+        <include refid="queryAllRecord"/>
+        <where>
+            <if test="keyword!=null and keyword!=''">
+                and (v.vipcard_id like concat('%',#{keyword},'%') or v.name like concat('%',#{keyword},'%'))
+            </if>
+            <if test="dataType==1">
+                and datediff(curdate(),ob.date)&lt;=1
+            </if>
+            <if test="dataType==3">
+                and datediff(curdate(),ob.date)&lt;=3
+            </if>
+            <if test="dataType==7">
+                and datediff(curdate(),ob.date)&lt;=7
+            </if>
+            <if test="dataType==-1">
+                <if test="beginDate!=null and beginDate!=''">
+                    and ob.date>=#{beginDate}
+                </if>
+                <if test="endDate!=null and endDate!=''">
+                    and ob.date&lt;=#{endDate}
+                </if>
+            </if>
+        </where>
+        ORDER BY ob.date DESC,ob.id DESC
+        LIMIT #{beginIndex}, #{pageSize}
+    </select>
+    <select id="queryExpordRecord" resultMap="BaseResultMap">
+        <include refid="queryAllRecord"/>
+        <where>
+            <if test="keyword!=null and keyword!=''">
+                and (v.vipcard_id like concat('%',#{keyword},'%') or v.name like concat('%',#{keyword},'%'))
+            </if>
+            <if test="dataType==1">
+                and datediff(curdate(),ob.date)&lt;=1
+            </if>
+            <if test="dataType==3">
+                and datediff(curdate(),ob.date)&lt;=3
+            </if>
+            <if test="dataType==7">
+                and datediff(curdate(),ob.date)&lt;=7
+            </if>
+            <if test="dataType==-1">
+                <if test="beginDate!=null and beginDate!=''">
+                    and ob.date>=#{beginDate}
+                </if>
+                <if test="endDate!=null and endDate!=''">
+                    and ob.date&lt;=#{endDate}
+                </if>
+            </if>
+        </where>
+        ORDER BY ob.date DESC,ob.id DESC
+    </select>
+</mapper>

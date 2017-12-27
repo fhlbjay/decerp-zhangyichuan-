@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.wolfcode.crm.mapper.MenuMapper">
+    <resultMap id="BaseResultMap" type="cn.wolfcode.crm.domain.Menu">
+        <id column="id" property="id"/>
+        <result column="text" property="text"/>
+        <result column="url" property="url"/>
+       <association property="parent" javaType="cn.wolfcode.crm.domain.Menu" columnPrefix="parents_">
+            <id column="id" property="id"/>
+            <result column="text" property="text"/>
+        </association>
+      <association property="permission" column="permission_id"
+                     javaType="cn.wolfcode.crm.domain.Permission"
+                     select="cn.wolfcode.crm.mapper.PermissionMapper.selectByPrimaryKey"/>
+    </resultMap>
+    <resultMap id="MenuResultMap" type="cn.wolfcode.crm.domain.Menu">
+        <id column="id" property="id"/>
+        <result column="text" property="text"/>
+        <result column="url" property="url"/>
+       <!-- <collection property="children" column="id" ofType="cn.wolfcode.crm.domain.Menu"
+                    select="cn.wolfcode.crm.mapper.MenuMapper.getChildrenMenu"/>-->
+    </resultMap>
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+        DELETE FROM `menu`
+        WHERE id = #{id}
+    </delete>
+    <insert id="insert" parameterType="cn.wolfcode.crm.domain.Menu" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO `menu` (text, parent_id, url)
+        VALUES (#{text}, #{parent.id}, #{url})
+    </insert>
+    <update id="updateByPrimaryKey" parameterType="cn.wolfcode.crm.domain.Menu">
+        UPDATE `menu`
+        SET text      = #{text},
+            parent_id = #{parent.id},
+            url       = #{url}
+        WHERE id = #{id}
+    </update>
+    <select id="selectByPrimaryKey" resultType="cn.wolfcode.crm.domain.Menu" parameterType="java.lang.Long">
+        SELECT
+            id,
+            text,
+            parent_id,
+            url
+        FROM `menu`
+        WHERE id = #{id}
+    </select>
+    <select id="selectAll" resultMap="BaseResultMap">
+        SELECT
+            id,
+            text,
+            parent_id,
+            url
+        FROM `menu`
+    </select>
+    <select id="getRootMenu" resultMap="MenuResultMap">
+        SELECT *
+        FROM menu
+        WHERE parent_id = #{id};
+    </select>
+    <!--<select id="getChildrenMenu" resultMap="MenuResultMap">
+        SELECT *
+        FROM menu
+        WHERE parent_id = #{id}
+    </select>-->
+    <sql id="baseSql">
+        <where>
+            <if test="parentId==null">
+                and children.parent_id is null
+            </if>
+            <if test="parentId!=null">
+                and children.parent_id=#{parentId}
+            </if>
+        </where>
+    </sql>
+    <select id="queryCount" resultType="java.lang.Integer">
+        select count(id)
+        from `menu` children
+        <include refid="baseSql"/>
+    </select>
+    <!--加载所有菜单-->
+    <select id="queryList" resultMap="BaseResultMap">
+        select children.id, children.text, children.parent_id, children.url,
+        parent.id parents_id,parent.text parents_text
+        from `menu` children
+        LEFT JOIN menu parent ON children.parent_id = parent.id
+        <include refid="baseSql"/>
+        LIMIT #{beginIndex},#{rows};
+    </select>
+    <select id="getParentIdById" resultType="java.lang.Long">
+        SELECT parent_id
+        FROM menu
+        WHERE id = #{parentId}
+    </select>
+</mapper>

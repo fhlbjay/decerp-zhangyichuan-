@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.wolfcode.crm.mapper.ProductMapper">
+    <resultMap id="BaseResultMap" type="cn.wolfcode.crm.domain.Product">
+        <id column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="sn" property="sn"/>
+        <result column="salePrice" property="salePrice"/>
+        <result column="stockQuantity" property="stockQuantity"/>
+        <result column="inputTime" property="inputTime"/>
+        <result column="state" property="state"/>
+        <result column="costPrice" property="costPrice"/>
+        <association property="productStock" javaType="ProductStock" column="productStock_id" columnPrefix="ps_">
+            <id property="id" column=""/>
+            <result column="storeNumber" property="storeNumber"/>
+        </association>
+        <association property="unit" column="u_id" javaType="Unit" columnPrefix="u_">
+            <id column="id" property="id"/>
+            <result property="name" column="name"/>
+        </association>
+        <association property="parent" column="m_id" javaType="Dirname" columnPrefix="d_">
+            <id column="id" property="id"/>
+            <result property="name" column="name"/>
+        </association>
+        <association property="root" column="root_id" javaType="LinkageMenu" columnPrefix="m_">
+            <id column="id" property="id"/>
+            <result property="name" column="name"/>
+        </association>
+    </resultMap>
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+    delete from `product`
+    where id = #{id}
+  </delete>
+    <insert id="insert" parameterType="cn.wolfcode.crm.domain.Product" useGeneratedKeys="true" keyProperty="id">
+    insert into `product` (name, sn, salePrice,unit_id, parent_id,root_id,stockQuantity,inputTime,state,costPrice,productStock_id)
+    values
+    (#{name}, #{sn}, #{salePrice}, #{unit.id}, #{parent.id},#{root.id},#{stockQuantity},#{inputTime},#{state},#{costPrice},#{productStock.id})
+  </insert>
+    <update id="updateByPrimaryKey" parameterType="cn.wolfcode.crm.domain.Product">
+    update `product`
+    set name = #{name},
+      sn = #{sn},
+      costPrice=#{costPrice},
+      salePrice = #{salePrice},
+      unit_id = #{unit.id},
+      root_id = #{root.id},
+      parent_id = #{parent.id},
+      stockQuantity = #{stockQuantity},
+      inputTime=#{inputTime}
+    where id = #{id}
+  </update>
+    <update id="changeState">
+        UPDATE product set state=state^1 WHERE  id=#{id}
+    </update>
+    <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long">
+    select id, name, sn, salePrice,unit_id, parent_id,root_id,stockQuantity,inputTime,state,costPrice
+    from `product`
+    where id = #{id}
+  </select>
+    <select id="selectAll" resultMap="BaseResultMap">
+    SELECT p.id,p.name,p.sn,p.salePrice,p.stockQuantity,p.inputTime,p.state,p.costPrice,ps.storeNumber ps_storeNumber,ps.id ps_id,
+        u.id u_id,u.name u_name,m.id m_id,m.name m_name,d.id d_id,d.name d_name
+        FROM `product` p LEFT JOIN  unit u ON  u.id=p.unit_id
+        LEFT JOIN  linkageMenu m ON m.id=p.root_id
+        LEFT  JOIN  dirname d ON  p.parent_id=d.id
+        LEFT JOIN productStock ps ON  ps.id=p.productStock_id
+  </select>
+    <select id="queryCount" resultType="java.lang.Integer">
+        SELECT COUNT(p.id)
+        FROM `product` p LEFT JOIN unit u ON u.id=p.unit_id
+        LEFT JOIN linkageMenu m ON m.id=p.root_id
+        LEFT JOIN dirname d ON p.parent_id=d.id
+        LEFT JOIN productStock ps ON  ps.id=p.productStock_id
+        <include refid="baselSql"/>
+    </select>
+    <sql id="baselSql">
+        <where>
+            <if test="keyword !=null and keyword!=''">
+                AND (p.sn LIKE concat('%',#{keyword},'%') or p.name like concat('%',#{keyword},'%'))
+            </if>
+            <if test="rootId !=null and rootId !=''">
+                and p.root_id= #{rootId}
+            </if>
+            <if test="parentId !=null and parentId !=''">
+                and p.parent_id= #{parentId}
+            </if>
+        </where>
+    </sql>
+    <select id="queryList" resultMap="BaseResultMap">
+        SELECT p.id,p.name,p.sn,p.salePrice,p.stockQuantity,p.inputTime,p.state,p.costPrice,
+        ps.storeNumber ps_storeNumber,ps.id ps_id,
+
+        u.id u_id,u.name u_name,m.id m_id,m.name m_name,d.id d_id,d.name d_name
+        FROM `product` p LEFT JOIN unit u ON u.id=p.unit_id
+        LEFT JOIN linkageMenu m ON m.id=p.root_id
+        LEFT JOIN dirname d ON p.parent_id=d.id
+        LEFT JOIN productStock ps ON  ps.id=p.productStock_id
+        <include refid="baselSql"/>
+        LIMIT #{beginIndex}, #{rows}
+    </select>
+    <select id="selectProductAmount" resultType="String">
+        SELECT  COUNT(p.id)  FROM product p
+         LEFT JOIN productStock ps ON  ps.id=p.productStock_id
+         WHERE ps.storeNumber &lt;=100
+    </select>
+    <select id="ProductAmount" resultType="java.lang.Integer">
+        SELECT COUNT(id) FROM product
+    </select>
+</mapper>

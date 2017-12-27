@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.wolfcode.crm.mapper.InventoryItemMapper" >
+  <resultMap id="BaseResultMap" type="cn.wolfcode.crm.domain.InventoryItem" >
+    <id column="id" property="id" />
+    <result column="oldNumber" property="oldNumber" />
+    <result column="nowNumber" property="nowNumber" />
+    <result column="inputTime" property="inputTime" />
+    <result column="inventory_id" property="inventoryId" />
+    <association property="inputUser" javaType="cn.wolfcode.crm.domain.Employee" columnPrefix="e_">
+      <id column="id" property="id" />
+      <result column="username" property="username"/>
+    </association>
+  </resultMap>
+  
+  <insert id="insert" parameterType="cn.wolfcode.crm.domain.InventoryItem" useGeneratedKeys="true" keyProperty="id" >
+    insert into `inventoryitem` (oldNumber, nowNumber, inputTime, inputUser_id, inventory_id)
+    values (#{oldNumber}, #{nowNumber}, #{inputTime}, #{inputUser.id}, #{inventoryId})
+  </insert>
+  
+  <select id="queryCount" resultType="java.lang.Integer">
+    SELECT COUNT(id)
+    FROM inventoryitem
+    WHERE id = #{id}
+  </select>
+
+  <select id="queryList" resultMap="BaseResultMap">
+    SELECT i.id, i.oldNumber, i.nowNumber, i.inputTime, i.inventory_id,
+    e.id e_id,e.username e_username
+    FROM inventoryitem i JOIN employee e ON e.id = i.inputUser_id
+    WHERE i.inventory_id = #{id}
+  </select>
+</mapper>

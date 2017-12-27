@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.wolfcode.crm.mapper.DailyconsumeMapper">
+    <resultMap id="BaseResultMap" type="cn.wolfcode.crm.domain.Dailyconsume">
+        <id column="id" property="id" jdbcType="BIGINT"/>
+        <result column="amount" property="amount" jdbcType="DECIMAL"/>
+        <result column="date" property="date" jdbcType="DATE"/>
+        <result column="memo" property="memo" jdbcType="VARCHAR"/>
+        <association property="consumer" column="consumer_id" columnPrefix="e_"
+                     javaType="cn.wolfcode.crm.domain.Employee">
+            <id column="id" property="id"/>
+            <result column="username" property="username"/>
+        </association>
+        <association property="consumecatalog"  column="sn_id" columnPrefix="cc_"
+                     javaType="cn.wolfcode.crm.domain.Consumecatalog">
+            <id column="id" property="id"/>
+            <result column="name" property="name"/>
+        </association>
+    </resultMap>
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+    delete from `dailyconsume`
+    where id = #{id,jdbcType=BIGINT}
+  </delete>
+    <insert id="insert" parameterType="cn.wolfcode.crm.domain.Dailyconsume" useGeneratedKeys="true" keyProperty="id">
+    insert into `dailyconsume` (sn, amount, date,
+      consumer_id, memo, sn_id)
+    values (#{consumecatalog.name,jdbcType=VARCHAR},#{amount,jdbcType=DECIMAL}, #{date,jdbcType=DATE},
+      #{consumer.id,jdbcType=VARCHAR}, #{memo,jdbcType=VARCHAR},#{consumecatalog.id,jdbcType=VARCHAR})
+  </insert>
+    <update id="updateByPrimaryKey" parameterType="cn.wolfcode.crm.domain.Dailyconsume">
+    update `dailyconsume`
+    set
+      sn = #{consumecatalog.name,jdbcType=VARCHAR},
+      amount = #{amount,jdbcType=DECIMAL},
+      date = #{date,jdbcType=DATE},
+      consumer_id = #{consumer.id,jdbcType=VARCHAR},
+      memo = #{memo,jdbcType=VARCHAR},
+      sn_id = #{consumecatalog.id,jdbcType=VARCHAR}
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+    <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long">
+    select id,amount, date, consumer_id, memo,sn_id
+    from `dailyconsume`
+    where id = #{id,jdbcType=BIGINT}
+  </select>
+    <!--<select id="selectAll" resultMap="BaseResultMap">-->
+    <!--select id, sn, amount, date, consumer.id, memo-->
+    <!--from `dailyconsume`-->
+    <!--</select>-->
+    <select id="queryCount" resultType="Integer">
+    SELECT COUNT(id)
+    FROM dailyconsume
+  </select>
+    <select id="queryList" resultMap="BaseResultMap">
+        select d.id, amount, date, consumer_id, memo, e.id e_id, e.username e_username,cc.id cc_id,sn_id, cc.name cc_name
+        from `dailyconsume` d LEFT
+        join employee e
+        on d.consumer_id = e.id
+        join consumecatalog cc
+        on cc.id = d.sn_id
+	<where>
+        <if test="keyword != null and keyword != ''">
+            and (cc.name like concat('%',#{keyword},'%') or memo like concat('%',#{keyword},'%'))
+        </if>
+        <if test="beginDate != null ">
+            and date > #{beginDate}
+        </if>
+        <if test="endDate != null ">
+            and date &lt; #{endDate}
+        </if>
+    </where>
+    limit #{beginIndex},#{rows}
+  </select>
+    <select id="selectConsumerByConsumeId" resultType="cn.wolfcode.crm.domain.Employee">
+    select id, username, realname, password, tel, email, inputtime, state, admin
+    from `employee`
+	where id in(select DISTINCT consumer_id FROM dailyconsume WHERE id = #{id})
+    </select>
+
+</mapper>

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.wolfcode.crm.mapper.UnitMapper">
+  <resultMap id="BaseResultMap" type="cn.wolfcode.crm.domain.Unit">
+    <id column="id" property="id" />
+    <result column="name" property="name" />
+  </resultMap>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+    delete from `unit`
+    where id = #{id}
+  </delete>
+  <insert id="insert" keyProperty="id" parameterType="cn.wolfcode.crm.domain.Unit" useGeneratedKeys="true">
+    insert into `unit` (name)
+    values (#{name})
+  </insert>
+  <update id="updateByPrimaryKey" parameterType="cn.wolfcode.crm.domain.Unit">
+    update `unit`
+    set name = #{name}
+    where id = #{id}
+  </update>
+  <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
+    select id, name
+    from `unit`
+    where id = #{id}
+  </select>
+  <select id="selectAll" resultMap="BaseResultMap">
+    select id, name
+    from `unit`
+  </select>
+    <select id="selectUnitByName" resultType="cn.wolfcode.crm.domain.Unit">
+        select * FROM  unit WHERE  name=#{name}
+    </select>
+</mapper>

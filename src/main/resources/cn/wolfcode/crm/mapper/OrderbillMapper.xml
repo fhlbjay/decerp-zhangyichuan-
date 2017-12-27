@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.wolfcode.crm.mapper.OrderbillMapper">
+    <resultMap id="BaseResultMap" type="cn.wolfcode.crm.domain.Orderbill">
+        <id column="id" property="id"/>
+        <result column="sn" property="sn"/>
+        <result column="vdate" property="vdate"/>
+        <result column="status" property="status"/>
+        <result column="totalAmount" property="totalAmount"/>
+        <result column="payWay" property="payWay"/>
+        <result column="totalNumber" property="totalNumber"/>
+        <association property="inputUser" javaType="cn.wolfcode.crm.domain.Employee" columnPrefix="inuser_">
+            <id property="id" column="id"/>
+            <result property="username" column="name"/>
+        </association>
+        <association property="vip" javaType="cn.wolfcode.crm.domain.Vip" columnPrefix="sup_">
+            <id property="id" column="id"/>
+            <result property="name" column="name"/>
+        </association>
+        <collection property="items" ofType="cn.wolfcode.crm.domain.OrderbillItem"
+                    select="cn.wolfcode.crm.mapper.OrderbillItemMapper.selectByOrderbillId" column="id"/>
+    </resultMap>
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+        DELETE FROM `orderbill`
+        WHERE id = #{id}
+    </delete>
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id" keyColumn="id">
+        INSERT INTO `orderbill` (sn, vdate, status, totalAmount, totalNumber,
+                                  inputUser_id,  vip_id,payWay)
+        VALUES (#{sn}, #{vdate}, #{status}, #{totalAmount}, #{totalNumber},
+                 #{inputUser.id},  #{vip.id},#{payWay})
+    </insert>
+    <update id="updateByPrimaryKey" parameterType="cn.wolfcode.crm.domain.Orderbill">
+        UPDATE `orderbill`
+        SET sn          = #{sn},
+            vdate       = now(),
+            status      = #{status},
+            totalAmount = #{totalAmount},
+            payWay = #{payWay},
+            totalNumber = #{totalNumber},
+            vip_id = #{vip.id}
+        WHERE id = #{id}
+    </update>
+    <select id="selectByPrimaryKey" resultMap="BaseResultMap">
+        SELECT
+            orb.id,
+            orb.sn,
+            orb.vdate,
+            orb.status,
+            orb.totalAmount,
+            orb.payWay,
+            orb.totalNumber,
+
+            inputuser.id   inuser_id,
+            inputuser.username inuser_name,
+            vip.id    sup_id
+        FROM `orderbill` orb
+            LEFT JOIN employee inputuser
+                ON orb.inputUser_id = inputuser.id
+            LEFT JOIN vip vip
+                ON orb.vip_id = vip.id
+        WHERE orb.id = #{id}
+    </select>
+    <select id="selectAll" resultMap="BaseResultMap">
+        SELECT
+            orb.id,
+            orb.sn,
+            orb.vdate,
+            orb.status,
+            orb.totalAmount,
+            orb.totalNumber,
+            orb.payWay,
+            inputuser.id   inuser_id,
+            inputuser.username inuser_name,
+            vip.id    sup_id
+        FROM `orderbill` orb
+            LEFT JOIN employee inputuser
+                ON orb.inputUser_id = inputuser.id
+            LEFT JOIN vip vip
+                ON orb.vip_id = vip.id
+    </select>
+
+    <sql id="conditions_id">
+        <where>
+            <if test="beginDate != null">
+                and orb.vdate >= #{beginDate}
+            </if>
+            <if test="endDate != null">
+                and orb.vdate &lt;= #{endDate}
+            </if>
+            <if test="status >=0 ">
+                and orb.status = #{status}
+            </if>
+            <if test="vipId > 0">
+                and s.id = #{vipId}
+            </if>
+
+        </where>
+
+
+    </sql>
+
+
+    <select id="queryForCount" resultType="java.lang.Integer">
+        select count(orb.id)
+        from `orderbill` orb
+        LEFT JOIN employee inputuser on orb.inputUser_id = inputuser.id
+        LEFT JOIN vip s on orb.vip_id = s.id
+
+        <include refid="conditions_id"/>
+
+    </select>
+    <select id="queryForList" resultMap="BaseResultMap">
+        select orb.id, orb.sn, orb.vdate, orb.status, orb.totalAmount, orb.totalNumber, orb.payWay,
+        inputuser.id inuser_id,inputuser.username inuser_name,
+        s.id sup_id ,s.name sup_name
+        from `orderbill` orb
+        LEFT JOIN employee inputuser on orb.inputUser_id = inputuser.id
+        LEFT JOIN vip s on orb.vip_id = s.id
+        <include refid="conditions_id"/>
+        limit #{beginIndex},#{pageSize}
+    </select>
+    <select id="selectTotalConsum" resultType="java.math.BigDecimal">
+        SELECT sum(totalAmount)
+        FROM orderbill
+        <where>
+            <if test="beginDate!=null">
+                and vdate>=#{beginDate}
+            </if>
+            <if test="endDate!=null">
+                and vdate &lt;= #{endDate}
+            </if>
+        </where>
+    </select>
+    <select id="selectTotalNum" resultType="java.lang.Integer">
+        SELECT count(id)
+        FROM orderbill
+        <where>
+            <if test="beginDate!=null">
+                and vdate>=#{beginDate}
+            </if>
+            <if test="endDate!=null">
+                and vdate &lt;= #{endDate}
+            </if>
+        </where>
+    </select>
+</mapper>

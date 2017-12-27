@@ -1,0 +1,1 @@
+package cn.wolfcode.crm.service;import cn.wolfcode.crm.domain.Unit;import java.util.List;public interface IUnitService {	void deleteByPrimaryKey(Long id);	void insert(Unit record);	Unit selectByPrimaryKey(Long id);	List<Unit> selectAll();	void updateByPrimaryKey(Unit record);	Unit selectUnitByName(String name);}

@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.wolfcode.crm.mapper.InventoryMapper" >
+  <resultMap id="BaseResultMap" type="cn.wolfcode.crm.domain.Inventory" >
+    <id column="id" property="id" />
+    <result column="inputTime" property="inputTime" />
+    <association property="product" javaType="cn.wolfcode.crm.domain.Product" columnPrefix="p_">
+      <id column="id" property="id"/>
+      <result column="sn" property="sn"/>
+      <result column="name" property="name"/>
+    </association>
+    <association property="depot" javaType="cn.wolfcode.crm.domain.Depot" columnPrefix="d_">
+      <id column="id" property="id"/>
+      <result column="name" property="name"/>
+    </association>
+    <association property="productStock" javaType="cn.wolfcode.crm.domain.ProductStock" columnPrefix="ps_">
+      <id column="id" property="id"/>
+      <result column="inputTime" property="inputTime"/>
+      <result column="price" property="price"/>
+      <result column="storeNumber" property="storeNumber"/>
+      <result column="price" property="price"/>
+    </association>
+  </resultMap>
+  
+  <insert id="insert" parameterType="cn.wolfcode.crm.domain.Inventory" useGeneratedKeys="true" keyProperty="id" >
+    insert into `inventory` (inputTime, product_id, depot_id, productStock_id)
+    values (#{inputTime}, #{pId}, #{dId}, #{productstockId})
+  </insert>
+
+  <select id="queryCount" resultType="java.lang.Integer">
+    SELECT COUNT(i.id)
+    from `inventory` i JOIN product p ON p.id = i.product_id
+    JOIN depot d ON d.id = i.depot_id
+    JOIN productStock ps ON ps.id = i.productStock_id
+  </select>
+
+  <select id="queryList" resultMap="BaseResultMap">
+    select i.id, i.inputTime, p.id p_id, p.sn p_sn, p.name p_name, d.id d_id, d.name d_name,
+    ps.id ps_id, ps.inputTime ps_inputTime, ps.price ps_price, ps.storeNumber ps_storeNumber, ps.amount ps_amount
+    from `inventory` i LEFT JOIN product p ON p.id = i.product_id
+    LEFT JOIN depot d ON d.id = i.depot_id
+    LEFT JOIN productStock ps ON ps.id = i.productStock_id
+    LIMIT #{beginIndex},#{rows}
+  </select>
+
+
+  <update id="update">
+    UPDATE inventory SET inputTime = now()
+    WHERE id = #{id}
+  </update>
+
+</mapper>

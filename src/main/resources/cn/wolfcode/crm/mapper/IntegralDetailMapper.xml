@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.wolfcode.crm.mapper.IntegralDetailMapper">
+    <resultMap id="BaseResultMap" type="cn.wolfcode.crm.domain.IntegralDetail">
+        <id column="id" property="id"/>
+        <result column="operation_type" property="operationType"/>
+        <result column="amount_change" property="amountChange"/>
+        <result column="remark" property="remark"/>
+        <association property="vip" javaType="cn.wolfcode.crm.domain.Vip" columnPrefix="v_">
+            <id column="id" property="id"/>
+            <result column="name" property="name"/>
+            <result column="sn" property="vipcard.sn"/>
+            <result column="vipCardId" property="vipcard.id"/>
+            <result column="vipGrade" property="vipgrade"/>
+        </association>
+    </resultMap>
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+        DELETE FROM `integral_detail`
+        WHERE id = #{id}
+    </delete>
+    <insert id="insert" parameterType="cn.wolfcode.crm.domain.IntegralDetail" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO `integral_detail` (vip_id, operation_type, amount_change, remark)
+        VALUES (#{vip.id}, #{operationType}, #{amountChange}, #{remark})
+    </insert>
+    <update id="updateByPrimaryKey" parameterType="cn.wolfcode.crm.domain.IntegralDetail">
+        UPDATE `integral_detail`
+        SET vip_id         = #{vip.id},
+            operation_type = #{operationType},
+            amount_change  = #{amountChange},
+            remark         = #{remark}
+        WHERE id = #{id}
+    </update>
+    <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long">
+        SELECT
+            id,
+            vip_id,
+            operation_type,
+            amount_change,
+            remark
+        FROM `integral_detail`
+        WHERE id = #{id}
+    </select>
+    <!--查询明细-->
+    <select id="selectAll" resultMap="BaseResultMap">
+        SELECT
+            id.id,
+            v.id         v_id,
+            v.name       v_name,
+            v.vipcard_id v_vipCardId,
+            v.vipgrade   v_vipGrade,
+            vc.sn        v_sn,
+            id.operation_type,
+            id.amount_change,
+            id.remark
+        FROM `integral_detail` id
+            LEFT JOIN vip v ON vip_id = v.id
+            LEFT JOIN vipcard vc ON v.vipcard_id = vc.id
+    </select>
+    <sql id="queryParam">
+        <where>
+            <if test="vipId!=null and vipId!=''">
+                and v.id=#{vipId}
+            </if>
+        </where>
+    </sql>
+
+    <select id="queryRecordCount" resultType="java.lang.Integer">
+        SELECT count(id.id) FROM `integral_detail` id
+        LEFT JOIN vip v ON vip_id = v.id
+        <include refid="queryParam"/>
+    </select>
+    <select id="queryRecordList" resultMap="BaseResultMap">
+        SELECT
+            id.id,
+            v.id v_id,
+            v.name v_name,
+            v.vipcard_id v_vipCardId,
+            v.vipgrade v_vipGrade,
+            vc.sn v_sn,
+            id.operation_type,
+            id.amount_change,
+            id.remark
+        FROM `integral_detail` id
+            LEFT JOIN vip v ON vip_id = v.id
+            LEFT JOIN vipcard vc ON v.vipcard_id=vc.id
+        <include refid="queryParam"/>
+        ORDER BY id DESC
+        LIMIT #{beginIndex}, #{pageSize}
+    </select>
+</mapper>

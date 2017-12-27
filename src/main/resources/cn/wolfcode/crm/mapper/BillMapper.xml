@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.wolfcode.crm.mapper.BillMapper" >
+  <select id="queryCount" resultType="java.lang.Integer">
+    SELECT COUNT(id) FROM purchasingorderbillitem WHERE bill_id = #{id}
+  </select>
+
+  <select id="queryList" resultType="cn.wolfcode.crm.domain.Bill">
+    select item.costPrice,item.number,item.amount,item.remark,
+  	p.id,p.name,p.sn
+  	from purchasingorderbillitem item join product p on item.product_id=p.id
+  	where item.bill_id=#{billId}
+  </select>
+
+</mapper>

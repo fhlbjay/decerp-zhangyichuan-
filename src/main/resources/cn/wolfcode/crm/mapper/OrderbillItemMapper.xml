@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.wolfcode.crm.mapper.OrderbillItemMapper">
+    <resultMap id="BaseResultMap" type="cn.wolfcode.crm.domain.OrderbillItem">
+        <id column="id" property="id"/>
+        <result column="costPrice" property="costPrice"/>
+        <result column="number" property="number"/>
+        <result column="amount" property="amount"/>
+        <result column="remark" property="remark"/>
+        <result column="bill_id" property="billId"/>
+        <association property="product" javaType="cn.wolfcode.crm.domain.Product" columnPrefix="p_">
+            <id property="id" column="id"/>
+            <result property="name" column="name"/>
+        </association>
+    </resultMap>
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+    delete from `orderbillItem`
+    where id = #{id}
+  </delete>
+    <delete id="deleteByOrederbillKey">
+		   delete from `orderbillItem`
+    where bill_id = #{id}
+
+
+	</delete>
+
+    <insert id="insert" parameterType="cn.wolfcode.crm.domain.OrderbillItem" useGeneratedKeys="true" keyProperty="id">
+    insert into `orderbillItem` (costPrice, number, amount, remark, product_id, bill_id,saleAmount)
+    values (#{costPrice}, #{number}, #{amount}, #{remark}, #{product.id}, #{billId},#{saleAmount})
+  </insert>
+
+
+    <select id="selectByOrderbillId" resultMap="BaseResultMap">
+		SELECT item.id,item.costPrice,item.amount,item.number,item.remark,
+		p.id p_id,p.name p_name
+		FROM orderbillItem  item join product p
+		ON  item.product_id = p.id
+		 where item.bill_id = #{billId}
+	</select>
+    <sql id="chartSql">
+        <where>
+            <if test="beginDate!=null">
+                and ob.vdate>=#{beginDate}
+            </if>
+            <if test="endDate!=null">
+                and ob.vdate &lt;= #{endDate}
+            </if>
+        </where>
+    </sql>
+    <select id="productChart" resultType="java.util.Map">
+        SELECT ${groupBy} groupByName,
+               COUNT(ob.id) totalNumber,
+               sum(obm.amount) totalCostAmount,
+               sum(obm.saleAmount) totalAmount,
+               sum(obm.saleAmount)- sum(obm.amount) grossProfit
+        FROM orderbillitem obm
+            LEFT JOIN orderbill  ob ON obm.bill_id = ob.id
+            LEFT JOIN product p ON obm.product_id = p.id
+            LEFT JOIN employee e ON ob.inputUser_id = e.id
+            <include refid="chartSql"/>
+        GROUP BY ${groupBy}
+    </select>
+    <select id="selectTop" resultType="map">
+SELECT p.id,p.name,SUM(item.number) totalNumber FROM
+`orderbillitem` item LEFT JOIN product p on item.product_id=p.id GROUP BY p.name
+ORDER BY totalNumber desc,p.name desc LIMIT 3
+    </select>
+</mapper>

@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.wolfcode.crm.mapper.GiftMapper">
+    <resultMap id="BaseResultMap" type="cn.wolfcode.crm.domain.Gift">
+        <id column="id" property="id"/>
+        <result column="sn" property="sn"/>
+        <result column="name" property="name"/>
+        <result column="integral" property="integral"/>
+        <result column="count" property="count"/>
+        <result column="surplus" property="surplus"/>
+        <result column="unit" property="unit"/>
+        <result column="image" property="image"/>
+    </resultMap>
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+        DELETE FROM `gift`
+        WHERE id = #{id}
+    </delete>
+    <insert id="insert" parameterType="cn.wolfcode.crm.domain.Gift" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO `gift` (sn, name, integral, count, surplus, unit, image)
+        VALUES (#{sn}, #{name}, #{integral}, #{count}, #{count}, #{unit}, #{image})
+    </insert>
+    <update id="updateByPrimaryKey" parameterType="cn.wolfcode.crm.domain.Gift">
+        UPDATE `gift`
+        SET sn        = #{sn},
+            name      = #{name},
+            integral = #{integral},
+            count     = #{count},
+            surplus   = #{surplus},
+            unit      = #{unit},
+            image     = #{image}
+        WHERE id = #{id}
+    </update>
+    <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long">
+        SELECT
+            id,
+            sn,
+            name,
+            integral,
+            count,
+            surplus,
+            unit,
+            image
+        FROM `gift`
+        WHERE id = #{id}
+    </select>
+    <select id="selectAll" resultMap="BaseResultMap">
+        SELECT
+            id,
+            sn,
+            name,
+            integral,
+            count,
+            surplus,
+            unit,
+            image
+        FROM `gift`
+    </select>
+    <sql id="queryParam">
+        <where>
+            <if test="keyword!=null and keyword!=''">
+                and (name like concat('%',#{keyword},'%') or sn like concat('%',#{keyword},'%'))
+            </if>
+        </where>
+    </sql>
+    <select id="queryCount" resultType="java.lang.Integer">
+        select count(id) from gift
+        <include refid="queryParam"/>
+    </select>
+    <select id="queryList" resultType="cn.wolfcode.crm.domain.Gift">
+        SELECT *
+        FROM gift
+        <include refid="queryParam"/>
+        LIMIT #{beginIndex}, #{pageSize}
+    </select>
+</mapper>

@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.wolfcode.crm.mapper.LinkageMenuMapper">
+  <resultMap id="BaseResultMap" type="cn.wolfcode.crm.domain.LinkageMenu">
+    <id column="id" property="id" />
+    <result column="name" property="name" />
+  </resultMap>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+    delete from `linkagemenu`
+    where id = #{id}
+  </delete>
+    <delete id="deleteDirnameByRootId">
+        DELETE from dirname WHERE  parent_id=#{id}
+    </delete>
+    <insert id="insert" parameterType="cn.wolfcode.crm.domain.LinkageMenu">
+    insert into `linkagemenu` (id, name)
+    values (#{id}, #{name})
+  </insert>
+  <update id="updateByPrimaryKey" parameterType="cn.wolfcode.crm.domain.LinkageMenu">
+    update `linkagemenu`
+    set name = #{name}
+    where id = #{id}
+  </update>
+  <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
+    select id, name
+    from `linkagemenu`
+    where id = #{id}
+  </select>
+  <select id="selectAll" resultMap="BaseResultMap">
+    select id, name
+    from `linkagemenu`
+  </select>
+    <select id="queryCount" resultType="java.lang.Integer">
+        SELECT COUNT(id)
+        FROM `linkagemenu`
+    </select>
+    <select id="queryList" resultType="LinkageMenu">
+        SELECT *
+        FROM `linkagemenu`
+        LIMIT #{beginIndex}, #{rows}
+    </select>
+    <select id="seleRoot" resultType="cn.wolfcode.crm.domain.LinkageMenu">
+        SELECT  * from linkageMenu WHERE  name=#{name}
+    </select>
+</mapper>
